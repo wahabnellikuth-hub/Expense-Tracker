@@ -52,10 +52,13 @@ function App() {
   return (
     <div className="app-container">
       {/* HEADER */}
-      <header className="app-header glass">
+      <header className="app-header shadow-sm">
         <div className="header-left">
-          <button className="month-selector" onClick={handlePrevMonth}>&lt;</button>
-          <div className="month-display" onClick={() => setCurrentMonthDate(startOfMonth(new Date()))}>
+          <img src="/logo.png" alt="Expense Tracker Logo" className="w-8 h-8 mr-2 rounded-full shadow-sm" />
+          <button className="month-selector" onClick={() => setCurrentMonthDate(subMonths(currentMonthDate, 1))}>
+            {'<'}
+          </button>
+          <div className="month-display font-bold text-lg" onClick={() => setCurrentMonthDate(startOfMonth(new Date()))}>
             <CalendarIcon size={16} />
             <span className="font-bold">{format(currentMonthDate, 'MMMM yyyy')}</span>
           </div>

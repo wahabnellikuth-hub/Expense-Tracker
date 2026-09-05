@@ -1,88 +1,95 @@
-import { openDB } from 'idb';
+import { db } from './firebase';
+import { ref, get, set, child, remove } from 'firebase/database';
 
-const DB_NAME = 'ExpenseTrackerDB';
-const DB_VERSION = 1;
-
-export const initDB = async () => {
-  return openDB(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-      if (!db.objectStoreNames.contains('categories')) {
-        const catStore = db.createObjectStore('categories', { keyPath: 'id' });
-        // Default categories
-        catStore.put({ id: 'cat_1', name: 'Meals', icon: '🍽', target: 5000 });
-        catStore.put({ id: 'cat_2', name: 'Junks', icon: '🍔', target: 2000 });
-        catStore.put({ id: 'cat_3', name: 'Healthy', icon: '🥗', target: 3000 });
-        catStore.put({ id: 'cat_4', name: 'Research', icon: '📚', target: 4000 });
-        catStore.put({ id: 'cat_5', name: 'Travel', icon: '✈️', target: 6000 });
-        catStore.put({ id: 'cat_6', name: 'Compulsory', icon: '📌', target: 5000 });
-      }
-      
-      if (!db.objectStoreNames.contains('expenses')) {
-        const expenseStore = db.createObjectStore('expenses', { keyPath: 'id' });
-        expenseStore.createIndex('categoryId', 'categoryId');
-        expenseStore.createIndex('date', 'date');
-      }
-
-      if (!db.objectStoreNames.contains('settings')) {
-        db.createObjectStore('settings');
-      }
-    },
-  });
-};
+const defaultCategories = [
+  { id: 'cat_1', name: 'Meals', icon: '🍽', target: 5000 },
+  { id: 'cat_2', name: 'Junks', icon: '🍔', target: 2000 },
+  { id: 'cat_3', name: 'Healthy', icon: '🥗', target: 3000 },
+  { id: 'cat_4', name: 'Research', icon: '📚', target: 4000 },
+  { id: 'cat_5', name: 'Travel', icon: '✈️', target: 6000 },
+  { id: 'cat_6', name: 'Compulsory', icon: '📌', target: 5000 }
+];
 
 export const dbApi = {
   async getCategories() {
-    const db = await initDB();
-    return db.getAll('categories');
+    try {
+      const snapshot = await get(child(ref(db), 'categories'));
+      let categories = [];
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        categories = Object.values(data);
+      }
+      
+      if (categories.length === 0) {
+        for (const cat of defaultCategories) {
+          await set(ref(db, 'categories/' + cat.id), cat);
+          categories.push(cat);
+        }
+      }
+      return categories;
+    } catch (e) {
+      console.error("Firebase categories error:", e);
+      return defaultCategories; // Fallback to defaults so app loads
+    }
   },
   
   async addCategory(category) {
-    const db = await initDB();
-    await db.put('categories', category);
+    await set(ref(db, 'categories/' + category.id), category);
   },
 
   async updateCategory(category) {
-    const db = await initDB();
-    await db.put('categories', category);
+    await set(ref(db, 'categories/' + category.id), category);
   },
   
   async updateCategoryTarget(id, newTarget) {
-    const db = await initDB();
-    const cat = await db.get('categories', id);
-    if (cat) {
+    const snapshot = await get(child(ref(db), 'categories/' + id));
+    if (snapshot.exists()) {
+      const cat = snapshot.val();
       cat.target = newTarget;
-      await db.put('categories', cat);
+      await set(ref(db, 'categories/' + id), cat);
     }
   },
 
   async getExpenses() {
-    const db = await initDB();
-    return db.getAll('expenses');
+    try {
+      const snapshot = await get(child(ref(db), 'expenses'));
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        return Object.values(data);
+      }
+      return [];
+    } catch (e) {
+      console.error("Firebase expenses error:", e);
+      return []; // Fallback to empty array
+    }
   },
 
   async addExpense(expense) {
-    const db = await initDB();
-    await db.put('expenses', expense);
+    await set(ref(db, 'expenses/' + expense.id), expense);
   },
 
   async updateExpense(expense) {
-    const db = await initDB();
-    await db.put('expenses', expense);
+    await set(ref(db, 'expenses/' + expense.id), expense);
   },
 
   async deleteExpense(id) {
-    const db = await initDB();
-    await db.delete('expenses', id);
+    await remove(ref(db, 'expenses/' + id));
   },
 
   async getSetting(key, defaultValue = null) {
-    const db = await initDB();
-    const val = await db.get('settings', key);
-    return val !== undefined ? val : defaultValue;
+    try {
+      const snapshot = await get(child(ref(db), 'settings/' + key));
+      if (snapshot.exists()) {
+        return snapshot.val().value;
+      }
+      return defaultValue;
+    } catch (e) {
+      console.error("Firebase settings error:", e);
+      return defaultValue;
+    }
   },
 
   async setSetting(key, value) {
-    const db = await initDB();
-    await db.put('settings', value, key);
+    await set(ref(db, 'settings/' + key), { value });
   }
 };
