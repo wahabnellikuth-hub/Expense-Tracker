@@ -54,7 +54,6 @@ function App() {
       {/* HEADER */}
       <header className="app-header shadow-sm">
         <div className="header-left">
-          <img src="/logo.png" alt="Expense Tracker Logo" className="w-8 h-8 mr-2 rounded-full shadow-sm" />
           <button className="month-selector" onClick={() => setCurrentMonthDate(subMonths(currentMonthDate, 1))}>
             {'<'}
           </button>
