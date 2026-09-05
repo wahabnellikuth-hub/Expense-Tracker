@@ -41,6 +41,10 @@ export const dbApi = {
     await set(ref(db, 'categories/' + category.id), category);
   },
   
+  async deleteCategory(id) {
+    await remove(ref(db, 'categories/' + id));
+  },
+  
   async updateCategoryTarget(id, newTarget) {
     const snapshot = await get(child(ref(db), 'categories/' + id));
     if (snapshot.exists()) {

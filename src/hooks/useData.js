@@ -70,6 +70,11 @@ export function useData(currentMonth, currentYear) {
     await loadData();
   };
 
+  const deleteCategory = async (id) => {
+    await dbApi.deleteCategory(id);
+    await loadData();
+  };
+
   const updateCategoryTarget = async (id, target) => {
     await dbApi.updateCategoryTarget(id, target);
     await loadData();
@@ -92,6 +97,7 @@ export function useData(currentMonth, currentYear) {
     deleteExpense,
     addCategory,
     updateCategory,
+    deleteCategory,
     updateCategoryTarget,
     updateSetting
   };

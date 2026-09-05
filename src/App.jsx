@@ -26,6 +26,7 @@ function App() {
     deleteExpense,
     addCategory,
     updateCategory,
+    deleteCategory,
     updateCategoryTarget,
     updateSetting
   } = useData(currentMonth, currentYear);
@@ -206,6 +207,7 @@ function App() {
           onUpdateSetting={updateSetting}
           onUpdateExpense={updateExpense}
           onDeleteExpense={deleteExpense}
+          onDeleteCategory={deleteCategory}
           onExport={() => exportToExcel(categories, allExpenses, currentMonth, currentYear)}
         />
       )}
@@ -341,7 +343,7 @@ function CategoryModal({ onClose, onAdd }) {
   );
 }
 
-function SettingsModal({ categories, settings, currentMonthExpenses, onClose, onUpdateCategory, onUpdateTarget, onUpdateSetting, onUpdateExpense, onDeleteExpense, onExport }) {
+function SettingsModal({ categories, settings, currentMonthExpenses, onClose, onUpdateCategory, onUpdateTarget, onUpdateSetting, onUpdateExpense, onDeleteExpense, onDeleteCategory, onExport }) {
   const [selectedExpenseId, setSelectedExpenseId] = useState('');
   const [editExpData, setEditExpData] = useState({ amount: '', date: '', description: '' });
 
@@ -402,6 +404,12 @@ function SettingsModal({ categories, settings, currentMonthExpenses, onClose, on
                       <input type="number" className="input-field p-2 flex-1" value={editCatData.target} onChange={e => setEditCatData({...editCatData, target: e.target.value})} placeholder="Target" />
                     </div>
                     <div className="flex gap-2 justify-end mt-1">
+                      <button className="text-sm font-semibold text-[var(--color-red)] px-2" onClick={() => {
+                        if(window.confirm('Delete this category?')) {
+                          onDeleteCategory(cat.id);
+                          setEditingCategoryId('');
+                        }
+                      }}>Delete</button>
                       <button className="text-sm font-semibold text-muted px-2" onClick={() => setEditingCategoryId('')}>Cancel</button>
                       <button className="text-sm font-semibold text-[var(--color-green)] px-2" onClick={() => {
                         onUpdateCategory({...cat, name: editCatData.name, icon: editCatData.icon, target: parseFloat(editCatData.target) || 0});
