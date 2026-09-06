@@ -403,15 +403,15 @@ function SettingsModal({ categories, settings, currentMonthExpenses, onClose, on
                       <span className="text-muted font-bold ml-2">₹</span>
                       <input type="number" className="input-field p-2 flex-1" value={editCatData.target} onChange={e => setEditCatData({...editCatData, target: e.target.value})} placeholder="Target" />
                     </div>
-                    <div className="flex gap-2 justify-end mt-1">
-                      <button className="text-sm font-semibold text-[var(--color-red)] px-2" onClick={() => {
+                    <div className="flex gap-3 justify-end mt-2">
+                      <button style={{ border: '1px solid var(--color-red)', color: 'var(--color-red)', background: 'transparent', padding: '4px 12px', borderRadius: '4px' }} className="text-sm font-semibold" onClick={() => {
                         if(window.confirm('Delete this category?')) {
                           onDeleteCategory(cat.id);
                           setEditingCategoryId('');
                         }
                       }}>Delete</button>
-                      <button className="text-sm font-semibold text-muted px-2" onClick={() => setEditingCategoryId('')}>Cancel</button>
-                      <button className="text-sm font-semibold text-[var(--color-green)] px-2" onClick={() => {
+                      <button style={{ border: '1px solid black', color: 'black', background: 'transparent', padding: '4px 12px', borderRadius: '4px' }} className="text-sm font-semibold" onClick={() => setEditingCategoryId('')}>Cancel</button>
+                      <button style={{ border: '1px solid var(--color-green)', color: 'var(--color-green)', background: 'transparent', padding: '4px 12px', borderRadius: '4px' }} className="text-sm font-semibold" onClick={() => {
                         onUpdateCategory({...cat, name: editCatData.name, icon: editCatData.icon, target: parseFloat(editCatData.target) || 0});
                         setEditingCategoryId('');
                       }}>Save</button>
@@ -476,9 +476,10 @@ function SettingsModal({ categories, settings, currentMonthExpenses, onClose, on
                   <input type="date" className="input-field p-2 w-2/3" value={editExpData.date} onChange={e => setEditExpData({...editExpData, date: e.target.value})} />
                 </div>
                 <input type="text" className="input-field p-2" value={editExpData.description} onChange={e => setEditExpData({...editExpData, description: e.target.value})} placeholder="Description" />
-                <div className="flex gap-2 justify-end mt-2">
-                  <button className="text-sm font-semibold text-[var(--color-red)] px-3 py-1 bg-red-50 rounded-md" onClick={handleDeleteExpense}>Delete</button>
-                  <button className="text-sm font-semibold text-[var(--color-green)] px-3 py-1 bg-green-50 rounded-md" onClick={handleSaveEdit}>Save Changes</button>
+                <div className="flex gap-3 justify-end mt-3">
+                  <button style={{ border: '1px solid var(--color-red)', color: 'var(--color-red)', background: 'transparent', padding: '4px 12px', borderRadius: '4px' }} className="text-sm font-semibold" onClick={handleDeleteExpense}>Delete</button>
+                  <button style={{ border: '1px solid black', color: 'black', background: 'transparent', padding: '4px 12px', borderRadius: '4px' }} className="text-sm font-semibold" onClick={() => setSelectedExpenseId('')}>Cancel</button>
+                  <button style={{ border: '1px solid var(--color-green)', color: 'var(--color-green)', background: 'transparent', padding: '4px 12px', borderRadius: '4px' }} className="text-sm font-semibold" onClick={handleSaveEdit}>Save</button>
                 </div>
               </div>
             )}

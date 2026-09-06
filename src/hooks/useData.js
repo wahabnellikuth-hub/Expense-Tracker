@@ -30,7 +30,7 @@ export function useData(currentMonth, currentYear) {
   const currentMonthExpenses = expenses.filter(exp => {
     const expDate = parseISO(exp.date); // assuming YYYY-MM-DD
     return expDate.getMonth() === currentMonth && expDate.getFullYear() === currentYear;
-  });
+  }).sort((a, b) => b.timestamp - a.timestamp);
 
   const totalSpent = currentMonthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
 
