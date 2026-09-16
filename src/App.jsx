@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Settings, Calendar as CalendarIcon, Download, Plus, Edit2, X, Trash2 } from 'lucide-react';
+import { Settings, Calendar as CalendarIcon, Download, Plus, Edit2, X, Trash2, Eye, EyeOff } from 'lucide-react';
 import { format, parseISO, isSameDay, startOfMonth, addMonths, subMonths } from 'date-fns';
 import { useData } from './hooks/useData';
 import { getCategoryColorStyles, formatCurrency } from './colors';
@@ -33,6 +33,7 @@ function App() {
 
   const [activeModal, setActiveModal] = useState(null); // 'expense', 'category', 'settings', 'date'
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [expandedCategories, setExpandedCategories] = useState({});
 
   // Computed for "Today / Selected Date"
   const selectedDateExpenses = useMemo(() => {
@@ -101,25 +102,64 @@ function App() {
           <div className="category-grid">
             {categories.map(cat => {
               const styles = getCategoryColorStyles(cat.percentage);
+              const isExpanded = expandedCategories[cat.id];
+              const catExpenses = currentMonthExpenses
+                .filter(e => e.categoryId === cat.id)
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+
               return (
-                <button 
-                  key={cat.id} 
-                  className={`category-card shadow-sm ${styles.className}`}
-                  style={{ backgroundColor: styles.bg, borderColor: styles.border, color: styles.text }}
-                  onClick={() => {
-                    setSelectedCategory(cat);
-                    setActiveModal('expense');
-                  }}
-                >
-                  <div className="cat-icon text-2xl mb-2">{cat.icon}</div>
-                  <div className="cat-name font-semibold text-sm">{cat.name}</div>
-                  <div className="cat-amounts text-xs mt-1 font-medium">
-                    {formatCurrency(cat.spent)} / {formatCurrency(cat.target)}
+                <div key={cat.id} className="category-wrapper" style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '0.5rem' }}>
+                  <div 
+                    className={`category-card shadow-sm ${styles.className}`}
+                    style={{ backgroundColor: styles.bg, borderColor: styles.border, color: styles.text, flex: 1, cursor: 'pointer', width: '100%' }}
+                    onClick={() => {
+                      setSelectedCategory(cat);
+                      setActiveModal('expense');
+                    }}
+                  >
+                    <div className="w-full flex justify-between items-start mb-2 px-1" style={{ width: '100%' }}>
+                      <div className="cat-icon text-2xl">{cat.icon}</div>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setExpandedCategories(prev => ({...prev, [cat.id]: !prev[cat.id]}));
+                        }}
+                        className="text-muted hover:text-black transition-colors p-1"
+                        style={{ background: 'transparent', border: 'none' }}
+                        title="View Transactions"
+                      >
+                        {isExpanded ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                    <div className="cat-name font-semibold text-sm">{cat.name}</div>
+                    <div className="cat-amounts text-xs mt-1 font-medium">
+                      {formatCurrency(cat.spent)} / {formatCurrency(cat.target)}
+                    </div>
+                    <div className="cat-percentage text-xs font-bold mt-1">
+                      {cat.percentage.toFixed(0)}%
+                    </div>
                   </div>
-                  <div className="cat-percentage text-xs font-bold mt-1">
-                    {cat.percentage.toFixed(0)}%
-                  </div>
-                </button>
+                  
+                  {isExpanded && (
+                    <div 
+                      className="category-transactions text-left bg-white rounded-lg p-2 shadow-sm border border-gray-100" 
+                      style={{ fontSize: '0.75rem', maxHeight: '150px', overflowY: 'auto' }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {catExpenses.length === 0 ? (
+                        <div className="text-center text-muted py-1">No transactions</div>
+                      ) : (
+                        <ul className="flex flex-col gap-1 m-0 p-0" style={{ listStyle: 'none' }}>
+                          {catExpenses.map((exp, index) => (
+                            <li key={exp.id} className="border-b border-gray-50 pb-1 last:border-0 last:pb-0" style={{ paddingBottom: '0.25rem', borderBottom: '1px solid #f3f4f6' }}>
+                              <span className="font-semibold">{index + 1}.</span> {format(parseISO(exp.date), 'dd/MMM')} • {formatCurrency(exp.amount)} {exp.description ? `(${exp.description})` : ''}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  )}
+                </div>
               );
             })}
             
