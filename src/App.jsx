@@ -641,18 +641,18 @@ function CalculatorModal({ onClose }) {
           <div className="text-5xl font-light tracking-tight break-all">{result !== '' ? result : (input || '0')}</div>
         </div>
 
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-4 gap-3 calculator-grid">
           {buttons.flat().map((btn) => {
             const isOperator = ['/', '*', '-', '+', '='].includes(btn);
             const isTopRow = ['DEL', 'AC', '%'].includes(btn);
-            let btnClass = 'p-3 rounded-full font-semibold text-xl transition-all flex items-center justify-center h-16 w-16 mx-auto ';
+            let btnClass = 'calc-btn ';
             
             if (isOperator) {
-              btnClass += 'bg-orange-500 text-white hover:bg-orange-400';
+              btnClass += 'calc-btn-operator';
             } else if (isTopRow) {
-              btnClass += 'bg-gray-400 text-black hover:bg-gray-300';
+              btnClass += 'calc-btn-top';
             } else {
-              btnClass += 'bg-gray-800 text-white hover:bg-gray-700';
+              btnClass += 'calc-btn-number';
             }
 
             return (
