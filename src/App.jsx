@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Settings, Calendar as CalendarIcon, Download, Plus, Edit2, X, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Settings, Calendar as CalendarIcon, Download, Plus, Edit2, X, Trash2, Eye, EyeOff, Calculator } from 'lucide-react';
 import { format, parseISO, isSameDay, startOfMonth, addMonths, subMonths } from 'date-fns';
 import { useData } from './hooks/useData';
 import { getCategoryColorStyles, formatCurrency } from './colors';
@@ -92,6 +92,9 @@ function App() {
               {dateLabel}
               <button className="edit-date-btn" onClick={() => setActiveModal('date')}>
                 <Edit2 size={12} />
+              </button>
+              <button className="edit-date-btn" onClick={() => setActiveModal('calculator')} title="Calculator">
+                <Calculator size={12} />
               </button>
             </div>
           </div>
@@ -261,6 +264,10 @@ function App() {
             setActiveModal(null);
           }}
         />
+      )}
+
+      {activeModal === 'calculator' && (
+        <CalculatorModal onClose={() => setActiveModal(null)} />
       )}
     </div>
   );
@@ -565,6 +572,79 @@ function DateModal({ currentDate, onClose, onSelect }) {
         <button className="btn btn-primary w-full" onClick={() => onSelect(date)}>
           Confirm Date
         </button>
+      </div>
+    </div>
+  );
+}
+
+function CalculatorModal({ onClose }) {
+  const [input, setInput] = useState('');
+  const [result, setResult] = useState('');
+
+  const handleClick = (val) => {
+    setInput(prev => prev + val);
+  };
+
+  const handleCalculate = () => {
+    try {
+      const sanitized = input.replace(/[^0-9+\-*.]/g, '');
+      if (sanitized) {
+        // eslint-disable-next-line no-new-func
+        const res = new Function('return ' + sanitized)();
+        // Round to 2 decimal places if needed
+        const formattedRes = Number.isInteger(res) ? res : Number(res).toFixed(2);
+        setResult(formattedRes.toString());
+      }
+    } catch(e) {
+      setResult('Error');
+    }
+  };
+
+  const handleClear = () => {
+    setInput('');
+    setResult('');
+  };
+
+  const buttons = [
+    ['1', '2', '3', '+'],
+    ['4', '5', '6', '-'],
+    ['7', '8', '9', '*'],
+    ['C', '0', '.', '=']
+  ];
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content shadow-lg rounded-2xl" style={{ maxWidth: '320px', padding: '1.5rem' }}>
+        <div className="modal-header justify-between flex items-center mb-4">
+          <h3 className="font-bold text-lg flex items-center gap-2"><Calculator size={20} /> Calculator</h3>
+          <button onClick={onClose}><X size={20}/></button>
+        </div>
+        
+        <div className="mb-4 bg-gray-50 p-4 rounded-xl border border-gray-200 text-right shadow-inner">
+          <div className="text-muted text-sm min-h-[20px] mb-1">{input || '\u00A0'}</div>
+          <div className="text-3xl font-bold tracking-tight text-gray-800 break-all">{result !== '' ? result : (input || '0')}</div>
+        </div>
+
+        <div className="grid grid-cols-4 gap-3">
+          {buttons.flat().map((btn) => (
+            <button
+              key={btn}
+              onClick={() => {
+                if (btn === 'C') handleClear();
+                else if (btn === '=') handleCalculate();
+                else handleClick(btn);
+              }}
+              className={`p-3 rounded-xl font-bold text-lg transition-all shadow-sm flex items-center justify-center
+                ${btn === 'C' ? 'bg-red-100 text-red-600 hover:bg-red-200' : 
+                  btn === '=' ? 'bg-indigo-500 text-white hover:bg-indigo-600 shadow-md transform hover:-translate-y-0.5' : 
+                  ['+', '-', '*'].includes(btn) ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' :
+                  'bg-white border border-gray-100 text-gray-700 hover:bg-gray-50 hover:shadow-md'}
+              `}
+            >
+              {btn}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
