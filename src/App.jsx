@@ -582,16 +582,31 @@ function CalculatorModal({ onClose }) {
   const [result, setResult] = useState('');
 
   const handleClick = (val) => {
-    setInput(prev => prev + val);
+    if (val === 'DEL') {
+      setInput(prev => prev.slice(0, -1));
+    } else if (val === '+/-') {
+      // Basic toggle sign for the whole input for simplicity, or just ignore if too complex.
+      // Better to just append a minus sign if empty, or toggle if it's a single number.
+      if (input && !isNaN(input)) {
+        setInput(String(-Number(input)));
+      } else if (!input) {
+        setInput('-');
+      }
+    } else if (val === '%') {
+      if (input && !isNaN(input)) {
+        setInput(String(Number(input) / 100));
+      }
+    } else {
+      setInput(prev => prev + val);
+    }
   };
 
   const handleCalculate = () => {
     try {
-      const sanitized = input.replace(/[^0-9+\-*.]/g, '');
+      const sanitized = input.replace(/[^0-9+\-*/.]/g, '');
       if (sanitized) {
         // eslint-disable-next-line no-new-func
         const res = new Function('return ' + sanitized)();
-        // Round to 2 decimal places if needed
         const formattedRes = Number.isInteger(res) ? res : Number(res).toFixed(2);
         setResult(formattedRes.toString());
       }
@@ -606,44 +621,54 @@ function CalculatorModal({ onClose }) {
   };
 
   const buttons = [
-    ['1', '2', '3', '+'],
-    ['4', '5', '6', '-'],
+    ['DEL', 'AC', '%', '/'],
     ['7', '8', '9', '*'],
-    ['C', '0', '.', '=']
+    ['4', '5', '6', '-'],
+    ['1', '2', '3', '+'],
+    ['+/-', '0', '.', '=']
   ];
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content shadow-lg rounded-2xl" style={{ maxWidth: '320px', padding: '1.5rem' }}>
+      <div className="modal-content shadow-lg rounded-3xl" style={{ maxWidth: '320px', padding: '1.5rem', background: '#000', color: '#fff' }}>
         <div className="modal-header justify-between flex items-center mb-4">
           <h3 className="font-bold text-lg flex items-center gap-2"><Calculator size={20} /> Calculator</h3>
-          <button onClick={onClose}><X size={20}/></button>
+          <button onClick={onClose} className="text-gray-400 hover:text-white"><X size={20}/></button>
         </div>
         
-        <div className="mb-4 bg-gray-50 p-4 rounded-xl border border-gray-200 text-right shadow-inner">
-          <div className="text-muted text-sm min-h-[20px] mb-1">{input || '\u00A0'}</div>
-          <div className="text-3xl font-bold tracking-tight text-gray-800 break-all">{result !== '' ? result : (input || '0')}</div>
+        <div className="mb-4 p-4 text-right">
+          <div className="text-gray-400 text-sm min-h-[20px] mb-1">{input || '\u00A0'}</div>
+          <div className="text-5xl font-light tracking-tight break-all">{result !== '' ? result : (input || '0')}</div>
         </div>
 
         <div className="grid grid-cols-4 gap-3">
-          {buttons.flat().map((btn) => (
-            <button
-              key={btn}
-              onClick={() => {
-                if (btn === 'C') handleClear();
-                else if (btn === '=') handleCalculate();
-                else handleClick(btn);
-              }}
-              className={`p-3 rounded-xl font-bold text-lg transition-all shadow-sm flex items-center justify-center
-                ${btn === 'C' ? 'bg-red-100 text-red-600 hover:bg-red-200' : 
-                  btn === '=' ? 'bg-indigo-500 text-white hover:bg-indigo-600 shadow-md transform hover:-translate-y-0.5' : 
-                  ['+', '-', '*'].includes(btn) ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' :
-                  'bg-white border border-gray-100 text-gray-700 hover:bg-gray-50 hover:shadow-md'}
-              `}
-            >
-              {btn}
-            </button>
-          ))}
+          {buttons.flat().map((btn) => {
+            const isOperator = ['/', '*', '-', '+', '='].includes(btn);
+            const isTopRow = ['DEL', 'AC', '%'].includes(btn);
+            let btnClass = 'p-3 rounded-full font-semibold text-xl transition-all flex items-center justify-center h-16 w-16 mx-auto ';
+            
+            if (isOperator) {
+              btnClass += 'bg-orange-500 text-white hover:bg-orange-400';
+            } else if (isTopRow) {
+              btnClass += 'bg-gray-400 text-black hover:bg-gray-300';
+            } else {
+              btnClass += 'bg-gray-800 text-white hover:bg-gray-700';
+            }
+
+            return (
+              <button
+                key={btn}
+                onClick={() => {
+                  if (btn === 'AC') handleClear();
+                  else if (btn === '=') handleCalculate();
+                  else handleClick(btn);
+                }}
+                className={btnClass}
+              >
+                {btn === 'DEL' ? '⌫' : btn === '*' ? '×' : btn === '/' ? '÷' : btn}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
